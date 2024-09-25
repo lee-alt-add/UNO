@@ -159,6 +159,15 @@ class cards():
             elif top_card[0][1] == "Draw Two":
                 
                 if who_played["CPU"] == "Draw Two":
+                    while True:
+                        print("CPU played a Draw Two card")
+                        time.sleep(4)
+                        answer = input("Enter 'd' to draw 2 cards: ... ")
+                        if answer == 'd':
+                            break
+                        else:
+                            print('Invalid answer, Try again')
+                            continue
                     for i in range(2):
                         take_card(deck,player_cards,cards_taken)
                     top_card.append([top_card[0][0], "draw two"])
@@ -233,6 +242,20 @@ class cards():
             color, value = 0,1
 
             if top_card[0][value] not in ["Draw Two",'Wild Draw 4',"Wild"]:
+
+                #Wild Draw 4
+                for card in player_cards:
+                    if top_card[0][1] == "wild draw 4" and who_played["USER"]:
+                            for i in range(4):
+                                take_card(deck,player_cards,cards_taken)
+                            return
+                #Wild
+                for card in player_cards:
+                    if top_card[0][1] == "wild" and who_played["USER"]:
+                        take_card(deck,player_cards,cards_taken)
+                        return
+                
+
                 #PLAY
                 for card in player_cards:
                     if card[value] == top_card[0][value] or card[color] == top_card[0][color] or top_card[0][color] == 0:
@@ -242,24 +265,23 @@ class cards():
                             time.sleep(4)
                             continue
                         return
+
                 #DRAW
                 for card in player_cards:
                     #No Match on Main 
                     if card[value] != top_card[0][value] or card[color] != top_card[0][color]:
                         take_card(deck,player_cards,cards_taken)
                         return
-                    #Wild Draw 4
-                    if top_card[0][1] == "wild draw 4" and who_played["USER"]:
-                            for i in range(4):
-                                take_card(deck,player_cards,cards_taken)
-                            return
-
+            
                 #Request
                 for card in player_cards:
-                    if card[0] == requested[0] or top_card[0][1] in ineffective:
+                    if card[1] == requested[0] or top_card[0][1] in ineffective:
                         play_card(move, top_card, who_played, player_cards)
                         print('Played')
                         return
+
+
+                
 
             #DRAW TWO
             #########
@@ -321,25 +343,35 @@ class cards():
     
                 
 
-user = cards()
-user.dealer()
-user_cards = user.hand()
-cpu_cards = user.hand()
-top_card = [['red', "Draw Two"]]
+game = cards()
+game.dealer()
+user_cards = game.hand()
+cpu_cards = game.hand()
+top_card = game.top_card()
 print()
 print()
-user.top_card_view(top_card)
+game.top_card_view(top_card)
 print(len(deck))
 print()
 print()
-user.view(cpu_cards)
+game.view(user_cards)
+print(f"CPU cards: {len(cpu_cards)}")
 print("Enter '0' to draw or pick a card number above to play")
-for i in range(6):
-    user.PLAY_cpu(cpu_cards, top_card, who_played)
-    print(who_played)
-    user.top_card_view(top_card)
-    user.view(cpu_cards)
+while True:
+    
+    if len(user_cards) == 0:
+        print("Hooray, YOU WON!!")
+        break
+    elif len(cpu_cards) == 0:
+        print("Ooopps! YOU LOSE!")
+        break
+    
+    game.PLAY_user(user_cards, top_card, who_played)
+    game.PLAY_cpu(cpu_cards, top_card, who_played)
+    game.top_card_view(top_card)
+    game.view(user_cards)
     print(len(deck))
+    print(f"CPU cards: {len(cpu_cards)}")
 
 
 
