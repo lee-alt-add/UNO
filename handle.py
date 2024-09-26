@@ -12,6 +12,7 @@ who_played = {"CPU": '',"USER": 'Draw Two'}
 cards_taken = {"CPU": 0,"USER": 0}
 
 
+    
 
 class cards():
 
@@ -47,7 +48,7 @@ class cards():
     #TOP CARD - The card at top of discard pile.
     def top_card(self):
         self.top_card = [[random.choice(colors), random.choice(range(10))]]
-        deck.remove(self.top_card[0])
+        removing4rmDeck = deck.remove(self.top_card[0])
         return self.top_card
 
     #VIEW the Top Card
@@ -71,161 +72,91 @@ class cards():
         print('=___________________________=')
         print('')
 
-    
-
         
     #PLAY - The game being played.
-    def PLAY_user(self, player_cards, top_card, who_played):
-        self.player_cards = player_cards
-        self.top_card = top_card
-        self.who_played = who_played
-        requested = [0]
-        ineffective = ['wild', 'wild draw 4']
+    def PLAY_user(self):
+        self.dealer()
+        user_cards, cpu_cards = self.hand(), self.hand()
+        top_card = self.top_card()
 
-        def take_card(deck,player_cards,cards_taken):
-            new_card = random.choice(deck)
-            #ADD new card to USER list
-            player_cards.append(new_card)
-            #Remove card from deck
-            deck.remove(new_card)
-            #Count cards
-            cards_taken["USER"] = 1
-
-        def play_card(move, top_card, who_played, player_cards):
-            #Placing card on TOP.
-            top_card.append(player_cards[move-1])
-            top_card.pop(0)
-            #TRACKING played cards
-            who_played["USER"] = top_card[0][1]
-            #Removing the CARD from the USER's card list.
-            player_cards.remove(player_cards[move-1])
-
-        def user_color_declaration():
-            while True:
-                move = int(input("Card Number: ..."))
-                if move > len(player_cards):
-                    print("Not a valid choice, Try again")
-                    continue
-                else:
-                    return move
-        
-        #NORMAL MOVE
-        ############
-        while True:
-            if top_card[0][1] not in ["Draw Two",'Wild Draw 4',"Wild"]:
-                while True:
-                    user_color_declaration()
-                    #DRAW
-                    if move == 0:
-                        if top_card[0][1] == "wild draw 4" and who_played["CPU"]:
-                            for i in range(4):
-                                take_card(deck,player_cards,cards_taken)
-                            return
-                        else:
-                            take_card(deck,player_cards,cards_taken)
-                            print('Took')
-                            return
-
-                    #MOVE
-                    elif player_cards[move-1][0] == top_card[0][0] or player_cards[move-1][1] == top_card[0][1] or player_cards[move-1][0] == 0:
-                        play_card(move, top_card, who_played, player_cards)
-                        if who_played["USER"] == "Reverse" or who_played["USER"] == "Skip":
-                            print(f"Playing another card, because my card is '{top_card[0][1]}'")
-                            time.sleep(4)
-                            continue
-                        print('Played')
-                        return
-
-                    #Request
-                    elif player_cards[move-1][0] == requested[0] or top_card[0][1] in ineffective:
-                        play_card(move, top_card, who_played, player_cards)
-                        print('Played')
-                        return
-                        
-                    else:
-                        print('Invalid baba!')
-                        continue
-
-            #DRAW TWO
-            #########
-            elif top_card[0][1] == "Draw Two":
-                
-                if who_played["CPU"] == "Draw Two":
-                    while True:
-                        print("CPU played a Draw Two card")
-                        time.sleep(4)
-                        answer = input("Enter 'd' to draw 2 cards: ... ")
-                        if answer == 'd':
-                            break
-                        else:
-                            print('Invalid answer, Try again')
-                            continue
-                    for i in range(2):
-                        take_card(deck,player_cards,cards_taken)
-                    top_card.append([top_card[0][0], "draw two"])
-                    top_card.pop(0)
-                    print('Took')
-                    return
-
-            #WILD
-            #####
-            elif top_card[0][1] == "Wild":
-                if who_played["CPU"] == "Wild":
-                    requested.append(random.choice(colors))
-                    requested.pop(0)
-                    top_card.append([top_card[0][0], "wild"])
-                    top_card.pop(0)
-                    print()
-                    print(f"CPU is asking for {requested}")
-                    continue
-                elif who_played["USER"] == "Wild":
-                    top_card.append([top_card[0][0], "wild"])
-                    top_card.pop(0)
-                    continue
-
-            #WILD DRAW FOUR
-            ###############
-            elif top_card[0][1] == "Wild Draw 4":
-                if who_played["CPU"] == "Wild Draw 4":
-                    requested.append(random.choice(colors))
-                    requested.pop(0)
-                    top_card.append([top_card[0][0], "wild draw 4"])
-                    top_card.pop(0)
-                    print()
-                    print(f"CPU is asking for {requested}")
-                    continue
-                elif who_played["USER"] == "Wild Draw 4":
-                    top_card.append([top_card[0][0], "wild draw 4"])
-                    top_card.pop(0)
-                    continue
-
-
-    #PLAY - CPU player
-    def PLAY_cpu(self, player_cards, top_card, who_played):
-        self.player_cards = player_cards
-        self.top_card = top_card
-        self.who_played = who_played
-        requested = [0]
-        ineffective = ['wild', 'wild draw 4']
-
-        def take_card(deck,player_cards,cards_taken):
-            new_card = random.choice(deck)
-            #ADD new card to USER list
-            player_cards.append(new_card)
-            #Remove card from deck
-            deck.remove(new_card)
-            #Count cards
-            cards_taken["CPU"] = 1
-
-        def play_card(card, top_card, who_played, player_cards):
-            #Placing card on TOP.
+        def play_card(card, top_card, player_cards):
+            player_cards.remove(card)
             top_card.append(card)
             top_card.pop(0)
-            #TRACKING played cards
-            who_played["CPU"] = top_card[0][1]
-            #Removing the CARD from the USER's card list.
-            player_cards.remove(card)
+            
+        def take_card(player_cards, deck):
+            player_cards.append(deck[0])
+            deck.remove(deck[0])
 
+        def wild_card(top_card, player_cards, declared_color):
+            matches = []
+            #WILDS
+            if top_card[1] == "Wild":
+                matches = [card for card in player_cards if card[0] == declared_color]
+                if matches == []:
+                    take_card(player_cards, deck)
+            #WILD DRAW 4
+            elif top_card[1] == "Wild Draw 4":
+                matches = [card for card in player_cards if card[0] == declared_color]
+                if matches == []:
+                    for i in range(4):
+                        take_card(player_cards, deck)
+                        print("Took 4 cards")
+            return matches
+            
+            
+        
+        #USER
+        while True:
+            #NORMAL play
+            move = int(input("Card Number: ... "))
+            if move < 0 or move > len(user_cards):
+                print("Invalid choice, try again")
+                continue
+                    
+            elif top_card[0][0] != user_cards[move-1][0] or top_card[0][1] != user_cards[move-1][1]:
+                print("Card unplayable, Try a different card or draw if you don't have one")
+                continue
+            elif move == 0:
+                take_card(user_cards, deck)
+                
+            elif top_card[0][0] == user_cards[move-1][0] or top_card[0][1] == user_cards[move-1][1] or top_card[0][color] == 0:
+                play_card(wild_list[0], top_card, user_cards)
+                if top_card[0][1] in ["Reverse", "Skip"]:
+                    continue 
+            #DRAW TWO
+            elif top_card[0][1] == "Draw Two":
+                for i in range(2):
+                    take_card(user_cards, deck)
+                    
+            #WILD CARDS
+            elif top_card[0][1] in ['Wild', 'Wild Draw 4']:
+                cpu_choice = random.choice(colors)
+                while True:
+                    print(f"CPU: I want the color '{cpu_choice}'")
+                    move int(input("Card Number: ... "))
+                    if move not in range(1,len(user_cards)+1) or top_card[0][0] != user_cards[move-1]:
+                        print('Error, pick a valid card')
+                        continue
+                    elif move == 0:
+                        wild_card(top_card, player_cards, user_cards[move-1][0])
+                        break
+                    else:
+                        play_card(card, top_card, user_cards[move-1])
+                        break
+
+            #CPU
+            ####
+            while True:
+                cards_matching = [card for card in user_cards for identity in card if identity in top_card[0]]
+        
+        
+        
+                
+        
+        
+        
+    
 
 
         #NORMAL MOVE
@@ -239,12 +170,12 @@ class cards():
                 for card in player_cards:
                     if top_card[0][1] == "wild draw 4" and who_played["USER"]:
                             for i in range(4):
-                                take_card(deck,player_cards,cards_taken)
+                                take_card(player_cards, deck)
                             return
                 #Wild
                 for card in player_cards:
                     if top_card[0][1] == "wild" and who_played["USER"]:
-                        take_card(deck,player_cards,cards_taken)
+                        take_card(player_cards, deck)
                         return
                 
 
@@ -262,7 +193,7 @@ class cards():
                 for card in player_cards:
                     #No Match on Main 
                     if card[value] != top_card[0][value] or card[color] != top_card[0][color]:
-                        take_card(deck,player_cards,cards_taken)
+                        take_card(player_cards, deck)
                         return
             
                 #Request
@@ -280,7 +211,7 @@ class cards():
             elif top_card[0][value] == "Draw Two":
                 if who_played['USER'] == "Draw Two":
                     for i in range(2):
-                        take_card(deck,player_cards,cards_taken)
+                        take_card(player_cards, deck)
                     top_card.append([top_card[0][0], "draw two"])
                     top_card.pop(0)
                     print('Took 2 Cards')
