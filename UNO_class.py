@@ -39,7 +39,7 @@ class cards():
     #HAND - the cards given to player.
     def hand(self):
         inhand = []
-        for x in range(1,8):
+        for x in range(1):
             ucard = random.choice(deck)
             inhand.append(ucard)
             if ucard in deck:
