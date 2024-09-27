@@ -76,8 +76,11 @@ class cards():
     #PLAY - The game being played.
     def PLAY_user(self):
         self.dealer()
-        user_cards, cpu_cards = self.hand(), self.hand()
         top_card = self.top_card()
+        user_cards, cpu_cards = self.hand(), self.hand()
+        self.top_card_view(top_card)
+        self.view(user_cards)
+        top_card = [[0,'Wild']]
 
         def play_card(card, top_card, player_cards):
             player_cards.remove(card)
@@ -91,12 +94,12 @@ class cards():
         def wild_card(top_card, player_cards, declared_color):
             matches = []
             #WILDS
-            if top_card[1] == "Wild":
+            if top_card[0][1] == "Wild":
                 matches = [card for card in player_cards if card[0] == declared_color]
                 if matches == []:
                     take_card(player_cards, deck)
             #WILD DRAW 4
-            elif top_card[1] == "Wild Draw 4":
+            elif top_card[0][1] == "Wild Draw 4":
                 matches = [card for card in player_cards if card[0] == declared_color]
                 if matches == []:
                     for i in range(4):
@@ -108,20 +111,40 @@ class cards():
         
         #USER
         while True:
+            #WILD CARDS
+            if top_card[0][1] in ['Wild', 'Wild Draw 4']:
+                cpu_choice = random.choice(colors)
+                while True:
+                    print(f"CPU: I want the color '{cpu_choice}'")
+                    move = int(input("Card Number: ... "))
+                    if move == 0:
+                        user_cards = [['saasd',0]]
+                        wild_card(top_card, user_cards, cpu_choice)
+                        break
+                    try:
+                        
+                        if cpu_choice == user_cards[move-1][0]:
+                            play_card(user_cards[move-1], top_card, user_cards)
+                            break
+                    except Exception:
+                        print('Error, pick a valid card')
+                        continue
+                        
+                    
             #NORMAL play
             move = int(input("Card Number: ... "))
             if move < 0 or move > len(user_cards):
                 print("Invalid choice, try again")
                 continue
-                    
-            elif top_card[0][0] != user_cards[move-1][0] or top_card[0][1] != user_cards[move-1][1]:
+             
+            elif top_card[0][0] != user_cards[move-1][0] and top_card[0][1] != user_cards[move-1][1]:
                 print("Card unplayable, Try a different card or draw if you don't have one")
                 continue
             elif move == 0:
                 take_card(user_cards, deck)
                 
             elif top_card[0][0] == user_cards[move-1][0] or top_card[0][1] == user_cards[move-1][1] or top_card[0][color] == 0:
-                play_card(wild_list[0], top_card, user_cards)
+                play_card(user_cards[move-1], top_card, user_cards)
                 if top_card[0][1] in ["Reverse", "Skip"]:
                     continue 
             #DRAW TWO
@@ -129,27 +152,13 @@ class cards():
                 for i in range(2):
                     take_card(user_cards, deck)
                     
-            #WILD CARDS
-            elif top_card[0][1] in ['Wild', 'Wild Draw 4']:
-                cpu_choice = random.choice(colors)
-                while True:
-                    print(f"CPU: I want the color '{cpu_choice}'")
-                    move int(input("Card Number: ... "))
-                    if move not in range(1,len(user_cards)+1) or top_card[0][0] != user_cards[move-1]:
-                        print('Error, pick a valid card')
-                        continue
-                    elif move == 0:
-                        wild_card(top_card, player_cards, user_cards[move-1][0])
-                        break
-                    else:
-                        play_card(card, top_card, user_cards[move-1])
-                        break
+            
 
             #CPU
             ####
-            while True:
-                cards_matching = [card for card in user_cards for identity in card if identity in top_card[0]]
-        
+##            while True:
+##                cards_matching = [card for card in user_cards for identity in card if identity in top_card[0]]
+##        
         
         
                 
@@ -159,142 +168,143 @@ class cards():
     
 
 
-        #NORMAL MOVE
-        ############
-        while True:
-            color, value = 0,1
-
-            if top_card[0][value] not in ["Draw Two",'Wild Draw 4',"Wild"]:
-
-                #Wild Draw 4
-                for card in player_cards:
-                    if top_card[0][1] == "wild draw 4" and who_played["USER"]:
-                            for i in range(4):
-                                take_card(player_cards, deck)
-                            return
-                #Wild
-                for card in player_cards:
-                    if top_card[0][1] == "wild" and who_played["USER"]:
-                        take_card(player_cards, deck)
-                        return
-                
-
-                #PLAY
-                for card in player_cards:
-                    if card[value] == top_card[0][value] or card[color] == top_card[0][color] or top_card[0][color] == 0:
-                        play_card(card, top_card, who_played, player_cards)
-                        if who_played["CPU"] == "Reverse" or who_played["CPU"] == "Skip":
-                            print(f"Playing another card, because my card is '{top_card[0][1]}'")
-                            time.sleep(4)
-                            continue
-                        return
-
-                #DRAW
-                for card in player_cards:
-                    #No Match on Main 
-                    if card[value] != top_card[0][value] or card[color] != top_card[0][color]:
-                        take_card(player_cards, deck)
-                        return
-            
-                #Request
-                for card in player_cards:
-                    if card[1] == requested[0] or top_card[0][1] in ineffective:
-                        play_card(move, top_card, who_played, player_cards)
-                        print('Played')
-                        return
-
-
-                
-
-            #DRAW TWO
-            #########
-            elif top_card[0][value] == "Draw Two":
-                if who_played['USER'] == "Draw Two":
-                    for i in range(2):
-                        take_card(player_cards, deck)
-                    top_card.append([top_card[0][0], "draw two"])
-                    top_card.pop(0)
-                    print('Took 2 Cards')
-                    return
-
-            #WILD
-            #####
-            elif top_card[0][value] == "Wild":
-                if who_played["USER"] == "Wild":
-                    while True:
-                        answer = input("Declare colour: ... ")
-                        if answer in colors:
-                            break
-                        else:
-                            print("Invalid colour, choose 'red, green, blue or yellow")
-                            continue
-                    requested.append(answer)
-                    requested.pop(0)
-                    top_card.append([top_card[0][0], "wild"])
-                    top_card.pop(0)
-                    print()
-                    continue
-                elif who_played["CPU"] == "Wild":
-                    top_card.append([top_card[0][0], "wild"])
-                    top_card.pop(0)
-                    continue
-
-            #WILD DRAW FOUR
-            ###############
-            elif top_card[0][1] == "Wild Draw 4":
-                if who_played["USER"] == "Wild Draw 4":
-                    while True:
-                        answer = input("Declare colour: ... ")
-                        if answer in colors:
-                            break
-                        else:
-                            print("Invalid colour, choose 'red, green, blue or yellow")
-                            continue
-                    requested.append(answer)
-                    requested.pop(0)
-                    top_card.append([top_card[0][0], "wild draw 4"])
-                    top_card.pop(0)
-                    print()
-                    print(f"CPU is asking for {requested}")
-                    continue
-                elif who_played["CPU"] == "Wild Draw 4":
-                    top_card.append([top_card[0][0], "wild draw 4"])
-                    top_card.pop(0)
-                    continue
+##        #NORMAL MOVE
+##        ############
+##        while True:
+##            color, value = 0,1
+##
+##            if top_card[0][value] not in ["Draw Two",'Wild Draw 4',"Wild"]:
+##
+##                #Wild Draw 4
+##                for card in player_cards:
+##                    if top_card[0][1] == "wild draw 4" and who_played["USER"]:
+##                            for i in range(4):
+##                                take_card(player_cards, deck)
+##                            return
+##                #Wild
+##                for card in player_cards:
+##                    if top_card[0][1] == "wild" and who_played["USER"]:
+##                        take_card(player_cards, deck)
+##                        return
+##                
+##
+##                #PLAY
+##                for card in player_cards:
+##                    if card[value] == top_card[0][value] or card[color] == top_card[0][color] or top_card[0][color] == 0:
+##                        play_card(card, top_card, who_played, player_cards)
+##                        if who_played["CPU"] == "Reverse" or who_played["CPU"] == "Skip":
+##                            print(f"Playing another card, because my card is '{top_card[0][1]}'")
+##                            time.sleep(4)
+##                            continue
+##                        return
+##
+##                #DRAW
+##                for card in player_cards:
+##                    #No Match on Main 
+##                    if card[value] != top_card[0][value] or card[color] != top_card[0][color]:
+##                        take_card(player_cards, deck)
+##                        return
+##            
+##                #Request
+##                for card in player_cards:
+##                    if card[1] == requested[0] or top_card[0][1] in ineffective:
+##                        play_card(move, top_card, who_played, player_cards)
+##                        print('Played')
+##                        return
+##
+##
+##                
+##
+##            #DRAW TWO
+##            #########
+##            elif top_card[0][value] == "Draw Two":
+##                if who_played['USER'] == "Draw Two":
+##                    for i in range(2):
+##                        take_card(player_cards, deck)
+##                    top_card.append([top_card[0][0], "draw two"])
+##                    top_card.pop(0)
+##                    print('Took 2 Cards')
+##                    return
+##
+##            #WILD
+##            #####
+##            elif top_card[0][value] == "Wild":
+##                if who_played["USER"] == "Wild":
+##                    while True:
+##                        answer = input("Declare colour: ... ")
+##                        if answer in colors:
+##                            break
+##                        else:
+##                            print("Invalid colour, choose 'red, green, blue or yellow")
+##                            continue
+##                    requested.append(answer)
+##                    requested.pop(0)
+##                    top_card.append([top_card[0][0], "wild"])
+##                    top_card.pop(0)
+##                    print()
+##                    continue
+##                elif who_played["CPU"] == "Wild":
+##                    top_card.append([top_card[0][0], "wild"])
+##                    top_card.pop(0)
+##                    continue
+##
+##            #WILD DRAW FOUR
+##            ###############
+##            elif top_card[0][1] == "Wild Draw 4":
+##                if who_played["USER"] == "Wild Draw 4":
+##                    while True:
+##                        answer = input("Declare colour: ... ")
+##                        if answer in colors:
+##                            break
+##                        else:
+##                            print("Invalid colour, choose 'red, green, blue or yellow")
+##                            continue
+##                    requested.append(answer)
+##                    requested.pop(0)
+##                    top_card.append([top_card[0][0], "wild draw 4"])
+##                    top_card.pop(0)
+##                    print()
+##                    print(f"CPU is asking for {requested}")
+##                    continue
+##                elif who_played["CPU"] == "Wild Draw 4":
+##                    top_card.append([top_card[0][0], "wild draw 4"])
+##                    top_card.pop(0)
+##                    continue
 
             
     
                 
 
 game = cards()
-game.dealer()
-user_cards = game.hand()
-cpu_cards = game.hand()
-top_card = game.top_card()
-print()
-print()
-game.top_card_view(top_card)
-print(len(deck))
-print()
-print()
-game.view(user_cards)
-print(f"CPU cards: {len(cpu_cards)}")
-print("Enter '0' to draw or pick a card number above to play")
-while True:
-    
-    if len(user_cards) == 0:
-        print("Hooray, YOU WON!!")
-        break
-    elif len(cpu_cards) == 0:
-        print("Ooopps! YOU LOSE!")
-        break
-    
-    game.PLAY_user(user_cards, top_card, who_played)
-    game.PLAY_cpu(cpu_cards, top_card, who_played)
-    game.top_card_view(top_card)
-    game.view(user_cards)
-    print(len(deck))
-    print(f"CPU cards: {len(cpu_cards)}")
+game.PLAY_user()
+##game.dealer()
+##user_cards = game.hand()
+##cpu_cards = game.hand()
+##top_card = game.top_card()
+##print()
+##print()
+##game.top_card_view(top_card)
+##print(len(deck))
+##print()
+##print()
+##game.view(user_cards)
+##print(f"CPU cards: {len(cpu_cards)}")
+##print("Enter '0' to draw or pick a card number above to play")
+##while True:
+##    
+##    if len(user_cards) == 0:
+##        print("Hooray, YOU WON!!")
+##        break
+##    elif len(cpu_cards) == 0:
+##        print("Ooopps! YOU LOSE!")
+##        break
+##    
+##    game.PLAY_user(user_cards, top_card, who_played)
+##    game.PLAY_cpu(cpu_cards, top_card, who_played)
+##    game.top_card_view(top_card)
+##    game.view(user_cards)
+##    print(len(deck))
+##    print(f"CPU cards: {len(cpu_cards)}")
 
 
 
