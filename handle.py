@@ -72,7 +72,7 @@ class cards():
 
         
     #PLAY - The game being played.
-    def PLAY_user(self):
+    def PLAY_Game(self):
         self.dealer()
         top_card = self.top_card()
         user_cards, cpu_cards = self.hand(), self.hand()
@@ -116,6 +116,8 @@ class cards():
                     move = int(input("Card Number: ... "))
                     if move == 0:
                         wild_card(top_card, user_cards, cpu_choice)
+                        top_card.append([0, top_card[0][1].lower()])
+                        top_card.pop(0)
                         print("Card withdrawn!")
                         break
                     try:
@@ -132,33 +134,43 @@ class cards():
                 input("CPU played 'Draw Two' Press any button to draw the cards: ... ")
                 for i in range(2):
                     take_card(user_cards, deck)
+                top_card.append([top_card[0][0], top_card[0][1].lower()])
+                top_card.pop(0)
                                 
                     
             #NORMAL play
             while True:
                 move = int(input("Card Number: ... "))
+                print(top_card[0][0], user_cards[move-1][0])
                 if move < 0 or move > len(user_cards):
                     print("Invalid choice, try again")
                     continue
+
+                elif move == 0:
+                    take_card(user_cards, deck)
+                    print('took')
+                    break
+
+                elif top_card[0][0] == user_cards[move-1][0] or top_card[0][1] == user_cards[move-1][1] or user_cards[move-1][0] == 0 or top_card[0][1] in ['draw two','wild', 'wild draw 4']:
+                    play_card(user_cards[move-1], top_card, user_cards)
+                    print('played')
+                    if top_card[0][1] in ["Reverse", "Skip"]:
+                        print(f"Played a {top_card[0][1]} card, playing again")
+                        continue
+                    break
                 
                 elif top_card[0][0] != user_cards[move-1][0] and top_card[0][1] != user_cards[move-1][1]:
                     print("Card unplayable, Try a different card or draw if you don't have one")
                     continue
-                elif move == 0:
-                    take_card(user_cards, deck)
+                
                     
-                elif top_card[0][0] == user_cards[move-1][0] or top_card[0][1] == user_cards[move-1][1] or top_card[0][color] == 0:
-                    play_card(user_cards[move-1], top_card, user_cards)
-                    if top_card[0][1] in ["Reverse", "Skip"]:
-                        continue 
+                
             
             
 
         #CPU
         ####
         def PLAY_cpu(top_card,cpu_cards,deck):
-            top_card = [['blue', 3]]
-            cpu_cards = [["blue", "Skip"], ["blue", 6],["green",4]]
             while True:
                 #WILD cards
                 if top_card[0][1] == "Wild" or top_card[0][1] == "Wild Draw 4":
@@ -176,31 +188,45 @@ class cards():
                             return
                         elif cpu_cards[-1] == card and card[0] != declared_color:
                             wild_card(top_card, cpu_cards, declared_color)
+                            top_card.append([0, top_card[0][1].lower()])
+                            top_card.pop(0)
                             return
 
                 #DRAW TWO
                 elif top_card[0][1] == "Draw Two":
                     for i in range(2):
                         take_card(cpu_cards, deck)
-                    print(cpu_cards)
+                    top_card.append([top_card[0][0], top_card[0][1].lower()])
+                    top_card.pop(0)
                     print("Took")
                     return
 
                 #NORMAL cards
                 while True:
                     cards_matching = [card for card in cpu_cards for identity in card if identity in top_card[0]]
-                    if len(cards_matching) > 0 and cards_matching[0][0] != 0:
+                    if len(cards_matching) > 0 and cards_matching[0][0] != 0 or 0 in cpu_cards[0][0]:
                         play_card(cards_matching[0], top_card, cpu_cards)
                         if top_card[0][1] == "Skip" or top_card[0][1] == "Skip":
                             print(f"I played {top_card[0][1]}, so I will play again")
                             continue
                         else:
+                            print(cpu_cards)
                             break
+                    elif top_card[0][1] in ['draw two','wild', 'wild draw 4']:
+                        play_card(cpu_cards[0], top_card, cpu_cards)
+                        break
+                    elif len(cards_matching) < 0:
+                        take_card(cpu_cards, deck)
                 return
 
-                
+
+        while True:
+            self.top_card_view(top_card)
+            self.view(user_cards)      
+            PLAY_user(top_card,user_cards,deck)
+            PLAY_cpu(top_card,cpu_cards,deck)
+            print(len(cpu_cards))
         
-        PLAY_cpu(top_card,cpu_cards,deck)
         
         
 
@@ -209,7 +235,7 @@ class cards():
                 
 
 game = cards()
-game.PLAY_user()
+game.PLAY_Game()
 
 
 
