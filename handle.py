@@ -38,7 +38,7 @@ class cards():
             
     #HAND - the cards given to player.
     def hand(self):
-        self.inhand = [card for ind, card in enumerate(deck) if ind < 7]
+        self.inhand = [card for ind, card in enumerate(deck) if ind < 1]
         removing4rmDeck = [deck.remove(card) for card in self.inhand]
         return self.inhand
 
@@ -73,11 +73,8 @@ class cards():
         
     #PLAY - The game being played.
     def PLAY_Game(self):
-        self.dealer()
         top_card = self.top_card()
         user_cards, cpu_cards = self.hand(), self.hand()
-        self.top_card_view(top_card)
-        self.view(user_cards)
 
         def play_card(card, top_card, player_cards):
             player_cards.remove(card)
@@ -119,12 +116,12 @@ class cards():
                         top_card.append([0, top_card[0][1].lower()])
                         top_card.pop(0)
                         print("Card withdrawn!")
-                        break
+                        return
                     try:
                         
                         if cpu_choice == user_cards[move-1][0]:
                             play_card(user_cards[move-1], top_card, user_cards)
-                            break
+                            return
                     except Exception:
                         print('Error, pick a valid card')
                         continue
@@ -136,28 +133,30 @@ class cards():
                     take_card(user_cards, deck)
                 top_card.append([top_card[0][0], top_card[0][1].lower()])
                 top_card.pop(0)
+                return
                                 
                     
             #NORMAL play
             while True:
-                move = int(input("Card Number: ... "))
-                print(top_card[0][0], user_cards[move-1][0])
-                if move < 0 or move > len(user_cards):
+                try:
+                    move = int(input("Card Number: ... "))
+                except Exception:
                     print("Invalid choice, try again")
                     continue
 
-                elif move == 0:
+                if move == 0:
                     take_card(user_cards, deck)
                     print('took')
-                    break
+                    return
 
-                elif top_card[0][0] == user_cards[move-1][0] or top_card[0][1] == user_cards[move-1][1] or user_cards[move-1][0] == 0 or top_card[0][1] in ['draw two','wild', 'wild draw 4']:
+                elif top_card[0][0] == user_cards[move-1][0] or top_card[0][1] == user_cards[move-1][1] or user_cards[move-1][0] == 0 or top_card[0][1] in ['wild', 'wild draw 4']:
                     play_card(user_cards[move-1], top_card, user_cards)
                     print('played')
                     if top_card[0][1] in ["Reverse", "Skip"]:
                         print(f"Played a {top_card[0][1]} card, playing again")
                         continue
-                    break
+                    else:
+                        return
                 
                 elif top_card[0][0] != user_cards[move-1][0] and top_card[0][1] != user_cards[move-1][1]:
                     print("Card unplayable, Try a different card or draw if you don't have one")
@@ -184,9 +183,8 @@ class cards():
                         if card[0] == declared_color:
                             play_card(card, top_card, cpu_cards)
                             print("Played")
-                            print(cpu_cards)
                             return
-                        elif cpu_cards[-1] == card and card[0] != declared_color:
+                        elif cpu_cards[-1] == card:
                             wild_card(top_card, cpu_cards, declared_color)
                             top_card.append([0, top_card[0][1].lower()])
                             top_card.pop(0)
@@ -203,36 +201,32 @@ class cards():
 
                 #NORMAL cards
                 while True:
-                    cards_matching = [card for card in cpu_cards for identity in card if identity in top_card[0]]
-                    if len(cards_matching) > 0 and cards_matching[0][0] != 0 or 0 in cpu_cards[0][0]:
-                        play_card(cards_matching[0], top_card, cpu_cards)
-                        if top_card[0][1] == "Skip" or top_card[0][1] == "Skip":
-                            print(f"I played {top_card[0][1]}, so I will play again")
-                            continue
-                        else:
-                            print(cpu_cards)
+                    for card in cpu_cards:
+                        if card[0] == top_card[0][0] or card[1] == top_card[0][1] or 0 in cpu_cards[0] or top_card[0][0] == 0:
+                            play_card(card, top_card, cpu_cards)
                             break
-                    elif top_card[0][1] in ['draw two','wild', 'wild draw 4']:
-                        play_card(cpu_cards[0], top_card, cpu_cards)
-                        break
-                    elif len(cards_matching) < 0:
-                        take_card(cpu_cards, deck)
-                return
+                        elif cpu_cards[-1] == card:
+                            take_card(cpu_cards, deck)
+                            return
+                    if top_card[0][1] == "Skip" or top_card[0][1] == "Reverse":
+                        print(f"I played {top_card[0][1]}, so I will play again")
+                        continue
+                    else:
+                        return
 
 
         while True:
             self.top_card_view(top_card)
-            self.view(user_cards)      
+            self.view(user_cards)
+            print(f"The CPU has {len(cpu_cards)} card(s)")
             PLAY_user(top_card,user_cards,deck)
+            if len(user_cards) == 0:
+                print("Hooray! YOU WIN!!")
+                return
             PLAY_cpu(top_card,cpu_cards,deck)
-            print(len(cpu_cards))
-        
-        
-        
-
-            
-    
-                
+            if len(cpu_cards) == 0:
+                print("Ooops! YOU LOSE!")
+                return
 
 game = cards()
 game.PLAY_Game()
